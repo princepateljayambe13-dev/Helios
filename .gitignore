@@ -1,3 +1,4 @@
 Helios/data/helios.db
 __pycache__/
 *.pyc
+data/helios.db
