@@ -1,0 +1,229 @@
+import {
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
+  import{
+  createRoot
+}from'react-dom/client';
+  import'./styles.css';
+  
+const API=localStorage.getItem('heliosApiBase')||'http://127.0.0.1:8000/api/v1';
+  const get=async p=>{
+  const r=await fetch(`${
+  API
+}${
+  p
+}`);
+  if(!r.ok)throw Error(p);
+  return r.json()
+};
+  const time=v=>v?new Date(v).toLocaleTimeString([],
+  {
+  hour:'2-digit',
+  minute:'2-digit',
+  second:'2-digit'
+}):'—';
+  const duration=e=>{
+  const n=e.duration_seconds??((e.ended_at?new Date(e.ended_at):Date.now())-new Date(e.timestamp))/1000;
+  return `${
+  String(Math.max(0,
+  Math.floor(n/60))).padStart(2,
+  '0')
+}:${
+  String(Math.max(0,
+  Math.floor(n%60))).padStart(2,
+  '0')
+}`
+};
+  
+function Camera({
+  camera,
+  tracks
+}){
+  const online=camera.status==='ONLINE';
+  return <article className="camera">{
+  camera.stream_configured?<img src={
+  `${
+  API
+}/cameras/${
+  encodeURIComponent(camera.camera_id)
+}/stream`
+} alt={
+  `${
+  camera.name
+} live feed`
+}/>:<div className="empty">Stream not configured</div>
+}<div className="head"><b>{
+  camera.name
+}</b><i className={
+  online?'online':'offline'
+}>{
+  camera.status
+}</i></div>{
+  tracks.filter(t=>t.status==='ACTIVE'&&t.camera_id===camera.camera_id&&Array.isArray(t.current_position)).map(t=>{
+  const[x,
+  y,
+  w,
+  h]=t.current_position;
+  return <div key={
+  t.track_id
+} className={
+  `box ${
+  t.object_type.toLowerCase()
+}`
+} style={
+  {
+  left:`${
+  x*100
+}%`,
+  top:`${
+  y*100
+}%`,
+  width:`${
+  w*100
+}%`,
+  height:`${
+  h*100
+}%`
+}
+}><b>{
+  t.object_type
+} {
+  t.track_id
+}</b></div>
+})
+}</article>
+}
+function App(){
+  const[state,
+  setState]=useState({
+  cameras:[],
+  tracks:[],
+  events:[],
+  alerts:[],
+  summary:null,
+  connected:false
+});
+  const refresh=async(history=true)=>{
+  try{
+  const requests=[get('/cameras'),
+  get('/tracks'),
+  get('/system/summary'),
+  get('/alerts?status=ACTIVE')];
+  if(history)requests.push(get('/events?limit=8'));
+  const[rows,
+  tracks,
+  summary,
+  alerts,
+  events]=await Promise.all(requests);
+  const cameras=await Promise.all(rows.map(async c=>({
+  ...c,
+  ...await get(`/cameras/${
+  encodeURIComponent(c.camera_id)
+}/health`)
+})));
+  setState(s=>({
+  ...s,
+  cameras,
+  tracks,
+  summary,
+  alerts,
+  events:events||s.events,
+  connected:true
+}))
+}catch{
+  setState(s=>({
+  ...s,
+  connected:false
+}))
+}
+};
+  useEffect(()=>{
+  refresh();
+  const poll=setInterval(()=>refresh(false),
+  1000);
+  let ws;
+  const connect=()=>{
+  ws=new WebSocket(`${
+  API.replace(/^http/,
+  'ws')
+}/ws`);
+  ws.onmessage=e=>{
+  const message=JSON.parse(e.data);
+  if(message.topic==='observation'){
+  const{
+  event,
+  alert
+}=message.data;
+  setState(s=>({
+  ...s,
+  events:event?[event,
+  ...s.events.filter(item=>item.event_id!==event.event_id)].slice(0,
+  8):s.events,
+  alerts:alert?[alert,
+  ...s.alerts.filter(item=>item.alert_id!==alert.alert_id)]:s.alerts
+}));
+  refresh(false)
+}else refresh(true)
+};
+  ws.onclose=()=>setTimeout(connect,
+  2000)
+};
+  connect();
+  return()=>{
+  clearInterval(poll);
+  ws?.close()
+}
+} ,
+  []);
+  const active=useMemo(()=>state.tracks.filter(t=>t.status==='ACTIVE').length,
+  [state.tracks]);
+  return <main><header><div><strong>HELIOS</strong><span>Live surveillance</span></div><i className={
+  state.connected?'online':'offline'
+}>{
+  state.connected?'CONNECTED':'DISCONNECTED'
+}</i></header><section className="metrics"><div><small>Cameras</small><b>{
+  state.summary?.cameras.online??0
+}/{
+  state.summary?.cameras.total??0
+}</b></div><div><small>Active tracks</small><b>{
+  active
+}</b></div><div><small>Active alerts</small><b>{
+  state.alerts.length
+}</b></div></section><section className="layout"><div className="feeds">{
+  state.cameras.map(c=><Camera key={
+  c.camera_id
+} camera={
+  c
+} tracks={
+  state.tracks
+}/>)
+}</div><aside><h2>Active alerts</h2>{
+  state.alerts.length?state.alerts.map(a=><div className="alert" key={
+  a.alert_id
+}><b>{
+  a.severity
+}</b><span>{
+  a.message
+}</span><small>{
+  time(a.timestamp)
+}</small></div>):<p>No active alerts</p>
+}<h2>Recent activity</h2>{
+  state.events.map(e=><div className="event" key={
+  e.event_id
+}><b>{
+  e.object_type||e.event_type
+}</b><span>{
+  e.camera_id
+} · {
+  e.track_id||'system'
+}</span><small>{
+  time(e.timestamp)
+} · {
+  duration(e)
+}</small></div>)
+}</aside></section></main>
+};
+  createRoot(document.getElementById('root')).render(<App/>);
+  

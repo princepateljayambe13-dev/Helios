@@ -1,0 +1,8 @@
+
+> helios-dashboard@1.0.0 dev
+> vite --host 127.0.0.1 --port 5173
+
+
+  VITE v8.2.2  ready in 72 ms
+
+  ➜  Local:   http://127.0.0.1:5173/

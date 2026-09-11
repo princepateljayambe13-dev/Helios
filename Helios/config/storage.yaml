@@ -1,0 +1,3 @@
+database_path: data/helios.db
+evidence_directory: data/evidence
+retention_days: 30

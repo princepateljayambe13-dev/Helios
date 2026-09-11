@@ -1,0 +1,93 @@
+models:
+  - name: human-detector
+    mode: yolo26s
+    weights: models/detection/yolo26s.pt
+    version: yolo26s
+    enabled: true
+    classes: [HUMAN]
+    confidence_threshold: 0.30
+    device: auto
+    inference_fps: 6
+  - name: vehicle-detector
+    mode: yolo26s
+    weights: models/detection/yolo26s.pt
+    version: yolo26s
+    enabled: true
+    classes: [VEHICLE]
+    confidence_threshold: 0.30
+    device: auto
+    inference_fps: 6
+  - name: uav-detector
+    mode: roboflow-uav
+    workspace_name: prince-patel
+    workflow_id: general-segmentation-api-2
+    api_url: https://serverless.roboflow.com
+    api_key_env: UAV_ROBOFLOW_API_KEY
+    version: "1"
+    enabled: false
+    classes: [UAV]
+    confidence_threshold: 0.30
+    inference_fps: 1
+    parameters:
+      classes: drone
+  - name: license-plate-detector
+    mode: roboflow-anpr
+    workspace_name: prince-patel
+    workflow_id: general-segmentation-api-2
+    api_url: https://serverless.roboflow.com
+    api_key_env: UAV_ROBOFLOW_API_KEY
+    version: "1"
+    enabled: false
+    classes: [LICENSE_PLATE]
+    confidence_threshold: 0.30
+    inference_fps: 1
+    parameters:
+      classes: License_Plate
+  - name: face-detector
+    mode: roboflow-workflow
+    workspace_name: prince-patel
+    workflow_id: general-segmentation-api-2
+    api_url: https://serverless.roboflow.com
+    api_key_env: UAV_ROBOFLOW_API_KEY
+    version: workflow-current
+    enabled: true
+    classes: [FACE]
+    confidence_threshold: 0.30
+    inference_fps: 1
+    parameters:
+      classes: face
+  - name: thermal-person-detector
+    mode: roboflow-workflow
+    workspace_name: prince-patel
+    workflow_id: general-segmentation-api-2
+    api_url: https://serverless.roboflow.com
+    api_key_env: UAV_ROBOFLOW_API_KEY
+    version: "1"
+    enabled: false
+    classes: [HUMAN]
+    confidence_threshold: 0.30
+    inference_fps: 2
+    parameters:
+     classes: person
+  - name: special-vehicle-detector
+    mode: roboflow-special-vehicle
+    model_id: emergency-vehicles-detection-xockh-af7sr/1
+    api_url: https://serverless.roboflow.com
+    api_key_env: ROBOFLOW_API_KEY
+    version: "1"
+    enabled: true
+    classes: [VEHICLE]
+    confidence_threshold: 0.30
+    inference_fps: 1
+  - name: mog2-motion-detector
+    mode: opencv-mog2
+    version: mog2-v1
+    enabled: true
+    classes: [UNCLASSIFIED, MOTION]
+    confidence_threshold: 0.50
+    inference_fps: 4
+    parameters:
+      history: 500
+      var_threshold: 30.0
+      min_area_ratio: 0.005
+

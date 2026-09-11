@@ -1,0 +1,19 @@
+cameras:
+  - camera_id: CAM-01
+    name: North Perimeter
+    source_type: UDP
+    stream_reference: "udp://127.0.0.1:8080"
+    location: North perimeter
+    enabled: true
+  - camera_id: CAM-02
+    name: Vehicle Entrance
+    source_type: UDP
+    stream_reference: ""
+    location: Main entrance
+    enabled: true
+  - camera_id: CAM-03
+    name: Storage Approach
+    source_type: UDP
+    stream_reference: ""
+    location: Storage approach
+    enabled: true

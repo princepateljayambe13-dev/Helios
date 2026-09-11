@@ -1,0 +1,30 @@
+rules:
+  - rule_id: fire-detection
+    event_type: FIRE_DETECTED
+    severity: HIGH
+    cooldown_seconds: 30
+  - rule_id: smoke-detection
+    event_type: SMOKE_DETECTED
+    severity: HIGH
+    cooldown_seconds: 30
+  - rule_id: camera-offline
+    event_type: CAMERA_OFFLINE
+    severity: MEDIUM
+    cooldown_seconds: 60
+  - rule_id: gunshot-like
+    event_type: GUNSHOT_LIKE_DETECTED
+    severity: HIGH
+    cooldown_seconds: 30
+  - rule_id: explosion-like
+    event_type: EXPLOSION_LIKE_DETECTED
+    severity: CRITICAL
+    cooldown_seconds: 30
+  - rule_id: intrusion-detected
+    event_type: INTRUSION
+    severity: HIGH
+    cooldown_seconds: 15
+  - rule_id: loitering-detected
+    event_type: LOITERING
+    severity: HIGH
+    cooldown_seconds: 20
+

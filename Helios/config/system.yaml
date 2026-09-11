@@ -1,0 +1,11 @@
+system_name: HELIOS
+api_prefix: /api/v1
+track_timeout_seconds: 12
+track_buffer_frames: 60
+tracker_high_thresh: 0.25
+tracker_low_thresh: 0.10
+tracker_match_thresh: 0.80
+tracker_new_track_thresh: 0.25
+engine_restart_max_attempts: 3
+engine_restart_backoff_seconds: 2
+log_level: INFO
